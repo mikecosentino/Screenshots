@@ -1,7 +1,7 @@
 {
   "name": "Screenshots",
   "type": "TOOL",
-  "description": "Launches a gallery to view and share screenshots. Built from josegonzalez/minui-gallery-pak ",
+  "description": "A MinUI app for browsing your saved screenshots. Automatically organized by game/app.",
   "author": "mikecosentino",
   "repo_url": "https://github.com/mikecosentino/screenshots",
   "release_filename": "Screenshots.pak.zip",
@@ -9,5 +9,5 @@
     "tg5040"
   ],
   "launch": "launch.sh",
-  "version": "0.0.1"
+  "version": "1.0.0"
 }

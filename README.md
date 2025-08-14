@@ -1,6 +1,6 @@
 # screenshots.pak
 
-A MinUI app that starts a gallery for your images in your Screenshots directory. 
+A MinUI app for browsing your saved screenshots. Automatically organized by game/app.
 
 ## Requirements
 
