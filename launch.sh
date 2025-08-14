@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Screenshots
+# Screenshots. A MinUI pak for browsing your saved screenshots. Automatically organized by game/app.
 
 PAK_DIR="$(dirname "$0")"
 PAK_NAME="${PAK_DIR##*/}"
@@ -10,10 +10,7 @@ set -x
 mkdir -p "$LOGS_PATH"
 rm -f "$LOGS_PATH/$PAK_NAME.txt"
 exec >>"$LOGS_PATH/$PAK_NAME.txt" 2>&1
-
-# Ensure platform tools first on PATH (adjust if needed)
 export PATH="$PAK_DIR/bin/tg5040:$PATH"
-
 SCREENSHOT_DIR="/mnt/SDCARD/Screenshots"
 
 # temp/debug files
