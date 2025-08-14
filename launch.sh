@@ -43,6 +43,7 @@ compute_signature() {
 
 # Rebuild the entire cache in one pass for speed
 rebuild_cache() {
+  minui-presenter --message "Building list of screenshots" --timeout 0
   TMP_ALL_INDEX="$(mktemp -p /tmp allidx.XXXXXX)"
   : > "$TMP_ALL_INDEX"
 
@@ -176,21 +177,6 @@ build_view_json() {
   echo '  ], "selected": '"$selected_idx"' }' >> "$VIEW_JSON"
 }
 
-# ---------- actions ----------
-
-delete_screenshot() {
-  filepath="$1"
-  if rm -f -- "$filepath"; then
-    show_msg "Deleted:\n$(basename "$filepath")" 2
-    # Refresh cache after deletion
-    rebuild_cache
-    return 0
-  else
-    show_msg "Delete failed" 2
-    return 1
-  fi
-}
-
 # ---------- main ----------
 
 while :; do
@@ -204,7 +190,7 @@ while :; do
   [ -z "$APP_CHOICE" ] && continue
   echo "DEBUG: APP_CHOICE='$APP_CHOICE'"
 
-  # Page 2 loop: title = app name; X=DELETE, A=VIEW
+  # Page 2 loop: title = app name; A=VIEW
   while :; do
     build_file_lists_for_app "$APP_CHOICE"
     [ ! -s "$FILES_LABELS" ] && break
@@ -213,7 +199,6 @@ while :; do
     out="$(minui-list --format text \
             --file "$FILES_LABELS" \
             --title "$APP_CHOICE" \
-            --action-button "X" --action-text "DELETE" \
             --write-location "$idxfile" 2>/dev/null)"
     rc=$?
 
@@ -229,11 +214,6 @@ while :; do
     [ -z "$SEL_PATH" ] && continue
 
     case "$rc" in
-      5)  # Action #2: X=DELETE
-          delete_screenshot "$SEL_PATH"
-          # Rebuild list next loop after delete
-          continue
-          ;;
       0)  # A pressed → view with L/R navigation
           build_view_json "$file_idx"
           minui-presenter \
