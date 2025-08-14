@@ -12,7 +12,7 @@ If you haven't installed [minui-screenshot-monitor-pak](https://github.com/joseg
 ## Installation
 
 1. Mount your MinUI SD card.
-2. Download the latest release from Github. It will be named `Screenshots.pak.zip`.
+2. Download the latest release from [GitHub releases](https://github.com/mikecosentino/Screenshots/releases). It will be named `Screenshots.pak.zip`.
 3. Copy the zip file to `/Tools/$PLATFORM/Screenshots.pak.zip`.
 4. Extract the zip in place, then delete the zip file.
 5. Confirm that there is a `/Tools/$PLATFORM/Screenshots.pak/launch.sh` file on your SD card.
