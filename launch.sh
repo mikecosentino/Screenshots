@@ -25,7 +25,7 @@ TMP_FILES_UNSORTED=""
 VIEW_JSON="/tmp/screens_view.json"
 
 # Persistent cache to speed up list building
-CACHE_DIR="/mnt/SDCARD/.cache/screenshots"
+CACHE_DIR="/mnt/SDCARD/.userdata/tg5040/Screenshots"
 CACHE_APPS="$CACHE_DIR/apps.txt"
 CACHE_SIG_FILE="$CACHE_DIR/sig.txt"
 TMP_ALL_INDEX=""
@@ -43,7 +43,7 @@ compute_signature() {
 
 # Rebuild the entire cache in one pass for speed
 rebuild_cache() {
-  minui-presenter --message "Building list of screenshots" --timeout 0
+  minui-presenter --message "Building list of screenshots" --timeout 2
   TMP_ALL_INDEX="$(mktemp -p /tmp allidx.XXXXXX)"
   : > "$TMP_ALL_INDEX"
 

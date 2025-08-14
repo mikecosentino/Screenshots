@@ -24,10 +24,13 @@ If you haven't installed [minui-screenshot-monitor-pak](https://github.com/joseg
 - Select a game with `A` to view that game's screenshots (ordered by date with newest at the top)
 - `Left` or `right` buttons to scroll through that game's screenshots
 
+## Information
+ 
+- `/.userdata/tg5040/Screenshots` stores a cache of games and their screenshots
+
 ## Acknowledgements
 
 - [minui-list](https://github.com/josegonzalez/minui-list) by Jose Diaz-Gonzalez
 - [minui-presenter](https://github.com/josegonzalez/minui-presenter) by Jose Diaz-Gonzalez
 - [minui-gallery-pak](https://github.com/josegonzalez/minui-gallery-pak) by Jose Diaz-Gonzalez; which this pak is built off
-
 
