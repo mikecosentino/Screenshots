@@ -1,7 +1,7 @@
 {
   "name": "Screenshots",
   "type": "TOOL",
-  "description": "A MinUI pak for browsing your saved screenshots. Automatically organized by game/app.",
+  "description": "Browse your saved screenshots. Automatically organized by game/app.",
   "author": "mikecosentino",
   "repo_url": "https://github.com/mikecosentino/screenshots",
   "release_filename": "Screenshots.pak.zip",
@@ -9,5 +9,5 @@
     "tg5040"
   ],
   "launch": "launch.sh",
-  "version": "v0.1.1"
+  "version": "v0.1.2"
 }

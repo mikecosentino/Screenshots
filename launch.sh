@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Screenshots. A MinUI pak for browsing your saved screenshots. Automatically organized by game/app.
+# Screenshots. Browse your saved screenshots. Automatically organized by game/app.
 
 PAK_DIR="$(dirname "$0")"
 PAK_NAME="${PAK_DIR##*/}"
