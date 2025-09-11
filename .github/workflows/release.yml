@@ -1,0 +1,29 @@
+name: Build and Release Screenshots Pak
+
+on:
+  push:
+    tags:
+      - 'v*'   # Runs when you push a tag like v1.0.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install zip
+        run: sudo apt-get install -y zip
+
+      - name: Package Screenshots.pak.zip
+        run: |
+          mkdir -p dist
+          zip -r dist/Screenshots.pak.zip bin launch.sh LICENSE pak.json README.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Screenshots.pak.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
