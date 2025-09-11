@@ -1,15 +1,16 @@
 #!/bin/sh
-
-# Screenshots. Browse your saved screenshots. Automatically organized by game/app.
+# Screenshots. A MinUI pak for browsing your saved screenshots. Automatically organized by game/app.
+# Mike Cosentino
 
 PAK_DIR="$(dirname "$0")"
-PAK_NAME="${PAK_DIR##*/}"
+PAK_NAME="$(basename "$PAK_DIR")"
 PAK_NAME="${PAK_NAME%.*}"
 set -x
-: "${LOGS_PATH:=/mnt/SDCARD/Logs}"
-mkdir -p "$LOGS_PATH"
+
 rm -f "$LOGS_PATH/$PAK_NAME.txt"
-exec >>"$LOGS_PATH/$PAK_NAME.txt" 2>&1
+exec >>"$LOGS_PATH/$PAK_NAME.txt"
+exec 2>&1
+
 export PATH="$PAK_DIR/bin/tg5040:$PATH"
 SCREENSHOT_DIR="/mnt/SDCARD/Screenshots"
 
@@ -22,6 +23,7 @@ TMP_FILES_UNSORTED=""
 VIEW_JSON="/tmp/screens_view.json"
 
 # Persistent cache to speed up list building
+CACHE_MAX_AGE=$((24 * 60 * 60)) # 24 hours
 CACHE_DIR="/mnt/SDCARD/.userdata/tg5040/Screenshots"
 CACHE_APPS="$CACHE_DIR/apps.txt"
 CACHE_SIG_FILE="$CACHE_DIR/sig.txt"
@@ -48,11 +50,15 @@ rebuild_cache() {
   find "$SCREENSHOT_DIR" -maxdepth 1 -type f -name "*.png" | while IFS= read -r f; do
     base="$(basename "$f")"
     case "$base" in
-      *.*.png)
+      *.png)
         noext="${base%.png}"
-        app="${noext%%.*}"
-        rest="${noext#*.}"   # YYYY-MM-DD-HH-MM-SS
-        printf '%s\t%s\t%s\n' "$app" "$rest" "$f" >> "$TMP_ALL_INDEX"
+        # Extract timestamp using simple pattern matching
+        timestamp="$(echo "$noext" | grep -o '[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}-[0-9]\{2\}-[0-9]\{2\}-[0-9]\{2\}$')"
+        if [ -n "$timestamp" ]; then
+          # Get app name by removing timestamp pattern from the end
+          app="${noext%.$timestamp}"
+          printf '%s\t%s\t%s\n' "$app" "$timestamp" "$f" >> "$TMP_ALL_INDEX"
+        fi
         ;;
     esac
   done
@@ -84,12 +90,52 @@ rebuild_cache() {
 
 # Ensure cache is up-to-date; rebuild if signature differs or cache missing
 ensure_cache() {
+  # Only check cache once per session unless forced
+  [ -n "$CACHE_CHECKED" ] && return 0
+  CACHE_CHECKED=1
+
   curr_sig="$(compute_signature)"
   old_sig=""
-  [ -f "$CACHE_SIG_FILE" ] && old_sig="$(cat "$CACHE_SIG_FILE" 2>/dev/null)"
+  
+  if [ -f "$CACHE_SIG_FILE" ]; then
+    old_sig="$(cat "$CACHE_SIG_FILE" 2>/dev/null)"
+  fi
+  
+  # Only rebuild if signatures differ or cache is missing
   if [ ! -s "$CACHE_APPS" ] || [ "$curr_sig" != "$old_sig" ]; then
     rebuild_cache
   fi
+}
+
+delete_screenshot() {
+    echo "DEBUG: delete_screenshot called with file=$1"
+    local file="$1"
+    local base="$(basename "$file")"
+    
+    # Show confirmation dialog
+    minui-presenter \
+      --message "Delete: $base" \
+      --confirm-button A \
+      --confirm-text "YES" \
+      --confirm-show \
+      --cancel-button B \
+      --cancel-text "NO" \
+      --cancel-show \
+      --timeout 0
+    
+    rc=$?
+    echo "DEBUG: minui-presenter confirmation rc=$rc"
+    if [ "$rc" = "0" ]; then  # A pressed = Yes
+        echo "DEBUG: Deleting file $file"
+        rm -f "$file"
+        show_msg "Screenshot deleted" 1
+        # Force cache rebuild on next check
+        CACHE_CHECKED=""
+        echo "DEBUG: delete_screenshot returning success"
+        return 0
+    fi
+    echo "DEBUG: delete_screenshot cancelled"
+    return 1
 }
 
 cleanup() {
@@ -214,11 +260,23 @@ while :; do
       0)  # A pressed → view with L/R navigation
           build_view_json "$file_idx"
           minui-presenter \
+            --file "$VIEW_JSON" \
+            --action-button X \
+            --action-text "DELETE" \
+            --action-show \
             --cancel-show \
             --cancel-text "EXIT" \
             --timeout 0 \
-            --font-size-default 12 \
-            --file "$VIEW_JSON"
+            --font-size-default 12
+          rc=$?
+          case "$rc" in
+            0) ;;  # A pressed inside viewer, do nothing special
+            2) ;;  # Cancel/Exit pressed inside viewer, do nothing special
+            4) if delete_screenshot "$SEL_PATH"; then
+                # after successful delete, rebuild list
+                continue 2
+              fi ;;  # X pressed → delete screenshot
+          esac
           ;;
       2|3) # B/Menu → back
           break
