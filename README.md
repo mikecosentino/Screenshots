@@ -13,7 +13,8 @@ If you haven't installed [minui-screenshot-monitor-pak](https://github.com/joseg
 
 1. Mount your MinUI SD card.
 2. Download the latest release from [GitHub releases](https://github.com/mikecosentino/Screenshots/releases). It will be named `Screenshots.pak.zip`.
-3. Copy the zip file to `/Tools/$PLATFORM/Screenshots.pak.zip`.
+3. Create the folder `/Tools/$PLATFORM/Screenshots.pak.`
+4. Copy the zip file to `/Tools/$PLATFORM/Screenshots.pak.zip`.
 4. Extract the zip in place, then delete the zip file.
 5. Confirm that there is a `/Tools/$PLATFORM/Screenshots.pak/launch.sh` file on your SD card.
 6. Unmount your SD Card and insert it into your MinUI device.
@@ -23,6 +24,7 @@ If you haven't installed [minui-screenshot-monitor-pak](https://github.com/joseg
 - Browse to `Tools > Screenshots` and press `A` to enter the Pak. 
 - Select a game with `A` to view that game's screenshots (ordered by date with newest at the top)
 - `Left` or `right` buttons to scroll through that game's screenshots
+- `X` while viewing a screenshot will prompt for delete confirmation
 
 ## Information
  
