@@ -9,10 +9,11 @@
     "tg5040"
   ],
   "changelog": {
+    "v0.2.2": "Sped up rebuilding screenshot list after deleting a screenshot.",
     "v0.2.1": "Fixed a launch bug. Sorry!",
     "v0.2.0": "Pressing X while viewing a screenshot will prompt to delete. (I'm working on speeding up the screenshot list rebuild speed)",
     "v0.1.2": "Initial launch for the Pak Store"
   },
   "launch": "launch.sh",
-  "version": "v0.2.1"
+  "version": "v0.2.2"
 }
