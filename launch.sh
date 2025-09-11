@@ -111,6 +111,9 @@ delete_screenshot() {
     echo "DEBUG: delete_screenshot called with file=$1"
     local file="$1"
     local base="$(basename "$file")"
+    local noext="${base%.png}"
+    local timestamp="${noext##*.}"
+    local appname="${noext%.$timestamp}"
     
     # Show confirmation dialog
     minui-presenter \
@@ -128,9 +131,30 @@ delete_screenshot() {
     if [ "$rc" = "0" ]; then  # A pressed = Yes
         echo "DEBUG: Deleting file $file"
         rm -f "$file"
+        # Rebuild cache only for the affected app
+        appdir="$CACHE_DIR/app/$appname"
+        mkdir -p "$appdir"
+        : > "$appdir/labels.txt"
+        : > "$appdir/paths.txt"
+        # Regenerate per-app lists directly from existing screenshots
+        find "$SCREENSHOT_DIR" -maxdepth 1 -type f -name "${appname}.*.png" \
+          | while IFS= read -r f; do
+              base="$(basename "$f")"
+              noext="${base%.png}"
+              ts="${noext#$appname.}"
+              label="$(format_label "$ts")"
+              echo "$label" >> "$appdir/labels.txt"
+              echo "$f" >> "$appdir/paths.txt"
+            done | sort -r
+        if [ ! -s "$appdir/paths.txt" ]; then
+            echo "DEBUG: App $appname now empty, removing from cache"
+            rm -rf "$appdir"
+            grep -Fxv "$appname" "$CACHE_APPS" > "$CACHE_APPS.tmp" && mv "$CACHE_APPS.tmp" "$CACHE_APPS"
+        fi
+        echo "DEBUG: rebuilt cache for app $appname"
         show_msg "Screenshot deleted" 1
         # Force cache rebuild on next check
-        CACHE_CHECKED=""
+        # CACHE_CHECKED=""
         echo "DEBUG: delete_screenshot returning success"
         return 0
     fi
@@ -274,7 +298,7 @@ while :; do
             2) ;;  # Cancel/Exit pressed inside viewer, do nothing special
             4) if delete_screenshot "$SEL_PATH"; then
                 # after successful delete, rebuild list
-                continue 2
+                continue
               fi ;;  # X pressed → delete screenshot
           esac
           ;;
