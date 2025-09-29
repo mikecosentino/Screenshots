@@ -17,11 +17,25 @@ SCREENSHOT_DIR="/mnt/SDCARD/Screenshots"
 CACHE_DIR="/mnt/SDCARD/.userdata/tg5040/Screenshots"
 mkdir -p "$CACHE_DIR"
 
+show_status() {
+  local msg="$1"
+  minui-presenter --message "$msg" --timeout -1 &
+  STATUS_PID=$!
+  echo "Started status presenter PID=$STATUS_PID ($msg)"
+}
+
+hide_status() {
+  echo "Killing all minui-presenter instances..."
+  killall -q minui-presenter 2>/dev/null || true
+  STATUS_PID=""
+}
+
 ###############################################################################
 # Build TXT cache of apps and screenshots
 ###############################################################################
 
 build_all_apps_cache() {
+    show_status "Building screenshots cache..."
     apps="$(find "$SCREENSHOT_DIR" -maxdepth 1 -type f -name '*.png' \
         -exec basename {} .png \; \
         | sed -E 's/\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}$//' \
@@ -37,8 +51,11 @@ build_all_apps_cache() {
 
     # Build screenshot lists per app
     printf "%s\n" "$apps" | while IFS= read -r app; do
-        [ -n "$app" ] && build_screenshots_cache "$app"
+        [ -n "$app" ] && {
+            build_screenshots_cache "$app"
+        }
     done
+    hide_status
 }
 
 build_screenshots_cache() {
