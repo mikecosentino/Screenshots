@@ -35,7 +35,7 @@ hide_status() {
 ###############################################################################
 
 build_all_apps_cache() {
-    show_status "Building screenshots cache..."
+    show_status "Loading screenshots..."
     apps="$(find "$SCREENSHOT_DIR" -maxdepth 1 -type f -name '*.png' \
         -exec basename {} .png \; \
         | sed -E 's/\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}$//' \
@@ -49,19 +49,15 @@ build_all_apps_cache() {
         done
     } > "$CACHE_DIR/all_apps.txt"
 
-    # Build screenshot lists per app
-    printf "%s\n" "$apps" | while IFS= read -r app; do
-        [ -n "$app" ] && {
-            build_screenshots_cache "$app"
-        }
-    done
     hide_status
 }
 
 build_screenshots_cache() {
     app="$1"
-    out_file="$CACHE_DIR/${app}.txt"
 
+    show_status "Loading $app..."
+
+    out_file="$CACHE_DIR/${app}.txt"
     {
         find "$SCREENSHOT_DIR" -maxdepth 1 -type f -name "${app}.*.png" \
         | sort -r | while IFS= read -r file; do
@@ -74,13 +70,14 @@ build_screenshots_cache() {
             echo " $disp "
         done
     } > "$out_file"
+    hide_status
 }
 
 build_presenter_json_for_app() {
     app="$1"
     selected_index="$2"   # 0-based index of the chosen screenshot
     ss_file="$CACHE_DIR/${app}.txt"
-    out_file="$CACHE_DIR/${app}.presenter.json"
+    out_file="$CACHE_DIR/presenter.json"
 
     [ ! -f "$ss_file" ] && return
 
@@ -137,14 +134,17 @@ while true; do
     tmp_sel="$(mktemp)"
     minui-list --format text --file "$CACHE_DIR/all_apps.txt" \
         --title "All Apps" --write-location "$tmp_sel"
-    selected_app="$(cat "$tmp_sel" | xargs)"
+    selected_app="$(cat "$tmp_sel" | tr -d '\n')"
+    selected_app="${selected_app#"${selected_app%%[![:space:]]*}"}"  # trim leading spaces
+    selected_app="${selected_app%"${selected_app##*[![:space:]]}"}"  # trim trailing spaces
     rm -f "$tmp_sel"
 
     echo "selected_app raw: '$selected_app'" >>"$LOGS_PATH/$PAK_NAME.txt"
     [ -z "$selected_app" ] && break
 
     ss_file="$CACHE_DIR/${selected_app}.txt"
-    echo "Checking screenshots file: $ss_file" >>"$LOGS_PATH/$PAK_NAME.txt"
+    echo "Building screenshot cache for: $selected_app" >>"$LOGS_PATH/$PAK_NAME.txt"
+    build_screenshots_cache "$selected_app"
 
     while [ -f "$ss_file" ]; do
         tmp_ss="$(mktemp)"
@@ -153,7 +153,9 @@ while true; do
             --action-button "X" --action-text "DELETE" \
             --write-location "$tmp_ss"
         ret=$?                                  # capture exit code FIRST
-        sel_line="$(cat "$tmp_ss" | xargs)"     # only read after
+        sel_line="$(cat "$tmp_ss" | tr -d '\n')"
+        sel_line="${sel_line#"${sel_line%%[![:space:]]*}"}"
+        sel_line="${sel_line%"${sel_line##*[![:space:]]}"}"
         rm -f "$tmp_ss"
 
         echo "selected_screenshot raw: '$sel_line' (ret=$ret)" >>"$LOGS_PATH/$PAK_NAME.txt"
@@ -172,7 +174,7 @@ while true; do
                 {
                     echo '{ "items": ['
                     echo '  {'
-                    echo "    \"text\": \"Delete this screenshot?\","
+                    echo "    \"text\": \"Delete ${ts_file}?\","
                     echo "    \"background_image\": \"$shot_path\","
                     echo "    \"alignment\": \"top\""
                     echo '  }'
@@ -201,7 +203,7 @@ while true; do
         sel_index=$((sel_index - 1))
 
         build_presenter_json_for_app "$selected_app" "$sel_index"
-        presenter_file="$CACHE_DIR/${selected_app}.presenter.json"
+        presenter_file="$CACHE_DIR/presenter.json"
         echo "Opening screenshot set via presenter: $presenter_file" >>"$LOGS_PATH/$PAK_NAME.txt"
 
         minui-presenter --file "$presenter_file" --cancel-text "Back" --cancel-show
