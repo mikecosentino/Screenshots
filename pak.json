@@ -9,7 +9,7 @@
     "tg5040"
   ],
   "changelog": {
-    "v0.2.5": "Sped up pak loading by only loading list of screenshots on launch, and then building individual games' screenshots when choosing that game.",
+    "v0.2.5": "Fixed bug with games with an apostrophe in their title and sped up pak loading by only loading list of screenshots on launch, and then building individual games' screenshots when choosing that game.",
     "v0.2.4": "Displays a status screen while rebuilding cache.",
     "v0.2.3": "Moved screenshot delete to list of screenshots.",
     "v0.2.2": "Sped up rebuilding screenshot list after deleting a screenshot.",
